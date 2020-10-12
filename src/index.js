@@ -1,4 +1,4 @@
-import corsRules from './middleware/corsRules';
+import cors from 'cors';
 
 require('dotenv').config();
 const express = require('express');
@@ -11,12 +11,24 @@ require('./models').connect(config.dbUri);
 
 const PORT = process.env.PORT || 5000;
 
-app.use(corsRules());
+const corsOptions = {
+  origin:
+    process.env.ENVIRONMENT === 'dev'
+      ? 'http://localhost:3000'
+      : 'https://app.skyvue.io',
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/', async (req, res) => {
   res.send('hello from Skyvue!');
+});
+
+app.get('/health_check', async (req, res) => {
+  res.json({ status: 200, alive: true });
 });
 
 app.use(require('./routes'));
