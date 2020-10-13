@@ -12,6 +12,8 @@ import stripeService from "../../services/stripeService";
 import * as EmailValidator from 'email-validator';
 import createTokens from "./lib/createTokens";
 import verifyRefreshToken from './lib/verifyRefreshToken';
+import moment from 'moment';
+import refreshUser from './lib/refreshUser';
 
 /**
  * /auth/user routes
@@ -121,6 +123,7 @@ router.post('/login', async (req, res) => {
 
   const userWithUpdatedCount = await User.findByIdAndUpdate(user._id, {
     refreshAuthCount: user.refreshAuthCount + 1,
+    lastLoggedIn: moment().format(),
   }, { new: true }).exec();
 
   const { refreshToken, accessToken } = createTokens({
@@ -146,28 +149,11 @@ router.post('/refresh', async (req, res) => {
   }
 
   const { refreshToken } = req.body;
-  const decodedRefreshToken = verifyRefreshToken(refreshToken, process.env.JWT_SECRET);
+  const { error, ...newTokens } = await refreshUser(refreshToken);
 
-  if (decodedRefreshToken.error) {
-    return res.json({
-      error: decodedRefreshToken.name,
-    })
+  if (error) {
+    return res.status(401).json(error)
   }
-
-  const user = await User.findById(decodedRefreshToken.userId).lean().exec();
-  if (user.refreshAuthCount !== decodedRefreshToken.count) {
-    return res.status(401).json({ error: 'Authorization error' })
-  }
-
-  const userWithUpdatedCount = await User.findByIdAndUpdate(user._id, {
-    refreshAuthCount: user.refreshAuthCount + 1,
-  }, { new: true }).exec();
-  
-  const newTokens = createTokens({
-    userId: user._id,
-    email: decodedRefreshToken.email,
-    count: userWithUpdatedCount.refreshAuthCount,
-  });
 
   res.json({ ...newTokens });
 })

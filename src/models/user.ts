@@ -9,6 +9,9 @@ interface IUser extends Document {
   stripeId: string;
   roles: string;
   refreshAuthCount: number;
+  updatedAt: string;
+  createdAt: string;
+  lastLoggedIn: string;
 }
 
 const User = new Schema(
@@ -40,6 +43,9 @@ const User = new Schema(
       type: Number,
       default: 0,
     },
+    lastLoggedIn: {
+      type: String,
+    }
   },
   {
     timestamps: true,
@@ -47,5 +53,21 @@ const User = new Schema(
 );
 
 const model = Mongoose.model<IUser>('user', User);
+
+export const loadUser = async (userId: string) => {
+  const user = await model.findById(userId).lean().exec();
+  
+  return {
+    _id: user._id,
+    roles: user.roles,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    phone: user.phone,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    lastLoggedIn: user.lastLoggedIn,
+  }
+}
 
 export default model;
