@@ -11,9 +11,9 @@ const saltRounds = 10;
 import stripeService from "../../services/stripeService";
 import * as EmailValidator from 'email-validator';
 import createTokens from "./lib/createTokens";
-import verifyRefreshToken from './lib/verifyRefreshToken';
 import moment from 'moment';
 import refreshUser from './lib/refreshUser';
+import emailService from '../../services/emailService';
 
 /**
  * /auth/user routes
@@ -152,7 +152,7 @@ router.post('/refresh', async (req, res) => {
   const { error, ...newTokens } = await refreshUser(refreshToken);
 
   if (error) {
-    return res.status(401).json(error)
+    return res.json(error)
   }
 
   res.json({ ...newTokens });
@@ -179,6 +179,24 @@ router.post('/revokeToken', async (req, res) => {
   }).exec();
 
   res.sendStatus(200);
+})
+
+router.post('/forgot_password', async (req, res) => {
+  const reqSchema = Joi.object({
+    email: Joi.string().required(),
+  })
+
+  await reqSchema.validateAsync(req.body);
+
+  const { email } = req.body;
+  emailService.sendMail({
+    from: 'admin@skyvue.io',
+    to: email,
+    subject: 'Your Skyvue.io password reset link',
+    text: 'test test',
+  })
+
+  return res.sendStatus(200);
 })
 
 module.exports = router;
