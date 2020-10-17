@@ -1,19 +1,21 @@
 const express = require('express');
 
-const router = new express.Router();
+const router = express.Router();
 
 import User from '../../models/user';
 
 const Joi = require('joi');
 const bcrypt = require('bcrypt');
-const saltRounds = 10;
+const saltRounds = 12;
 
 import stripeService from "../../services/stripeService";
 import * as EmailValidator from 'email-validator';
 import createTokens from "./lib/createTokens";
+import makePasswordResetToken from './lib/makePasswordResetToken';
 import moment from 'moment';
 import refreshUser from './lib/refreshUser';
 import emailService from '../../services/emailService';
+import jwt from 'jsonwebtoken';
 
 /**
  * /auth/user routes
@@ -189,14 +191,88 @@ router.post('/forgot_password', async (req, res) => {
   await reqSchema.validateAsync(req.body);
 
   const { email } = req.body;
+  const user = await User.findOne({ email }).lean().exec();
+  if (!user) return res.sendStatus(200);
+
+  const passwordResetToken = makePasswordResetToken(user._id);
+  const baseUrl = process.env.ENVIRONMENT === 'dev' ? 'http://localhost:3000' : 'https://app.skyvue.io';
   emailService.sendMail({
     from: 'admin@skyvue.io',
     to: email,
-    subject: 'Your Skyvue.io password reset link',
-    text: 'test test',
+    subject: `Your Skyvue.io password reset link`,
+    html: `
+    <p>Skyvue.io received a request to reset your password. If you did not make this request, change your password immediately.</p>
+    <a href="${baseUrl}/forgot_password/${passwordResetToken}">Click here</a> to reset your password.
+    <br>
+    <p>Link not working? Copy and paste this directly into your browser:
+    <br>
+    ${baseUrl}/forgot_password/${passwordResetToken}</p>
+    `.trim(),
   })
 
   return res.sendStatus(200);
 })
+
+router.post('/forgot_password_validity', async (req, res) => {
+  const reqSchema = Joi.object({
+    token: Joi.string().required(),
+  })
+
+  await reqSchema.validateAsync(req.body);
+
+  const { token } = req.body;
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+  } catch (e) {
+    console.log(e);
+    if (e.name === 'TokenExpiredError') {
+      return res.json({ error: "token_expired" });
+    }
+    return res.status(500).json({ error: "unknown" });
+  }
+
+  return res.sendStatus(200);
+})
+
+router.post('/change_password', async (req, res) => {
+  const reqSchema = Joi.object({
+    token: Joi.string().required(),
+    password: Joi.string().required(),
+    confirmPassword: Joi.string().required(),
+  })
+
+  await reqSchema.validateAsync(req.body);
+  const { token, password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.json({ error: "Passwords do not match" });
+  }
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+  } catch (e) {
+    console.log(e);
+    if (e.name === 'TokenExpiredError') {
+      return res.json({ error: "token_expired" });
+    }
+    return res.status(500).json({ error: "token_invalid" });
+  }
+
+  const { userId } = jwt.decode(token) as { userId: string };
+  
+  const hash = await bcrypt.hash(password, saltRounds);
+  await User.findByIdAndUpdate(
+    userId,
+    {
+      password: hash,
+    }
+  )
+    .lean()
+    .exec();
+  
+  res.json({ success: true });
+})
+
 
 module.exports = router;
