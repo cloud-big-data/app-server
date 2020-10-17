@@ -87,6 +87,20 @@ router.post('/create', async (req, res) => {
     count: 0,
   })
 
+  emailService.sendMail({
+    to: ["tycobbconsulting@gmail.com", "me@tristantarpley.com"],
+    from: "admin@skyvue.io",
+    subject: `New Skyvue user - ${firstName} ${lastName}`,
+    html: `
+      <p>There is a new Skyvue user.</p>
+      <ul>
+        <li>Name: ${firstName} ${lastName}</li>
+        <li>Email: ${email}</li>
+        <li>Phone: ${phone}</li>
+      </ul>
+    `.trim()
+  })
+
   return res.status(200).json({
     refreshToken,
     accessToken
