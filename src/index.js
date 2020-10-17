@@ -19,6 +19,7 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
+// app.set('trust proxy', true);
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

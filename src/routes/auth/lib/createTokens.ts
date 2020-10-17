@@ -9,7 +9,7 @@ const createTokens = (
       email,
     },
     process.env.JWT_SECRET,
-    { expiresIn: '1 day'},
+    { expiresIn: '15m'},
   );
 
   const refreshToken = jwt.sign(

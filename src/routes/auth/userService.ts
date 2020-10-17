@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 import User from '../../models/user';
+import securityLog from '../../models/securityLog';
 
 const Joi = require('joi');
 const bcrypt = require('bcrypt');
@@ -134,6 +135,14 @@ router.post('/login', async (req, res) => {
     count: userWithUpdatedCount.refreshAuthCount,
   });
 
+  const log = new securityLog({
+    description: "NEW_LOGIN",
+    ipAddress: req.connection.remoteAddress,
+    userId: user._id,
+  })
+
+  log.save();
+
   return res.status(200).json({ refreshToken, accessToken });
 })
 
@@ -210,6 +219,14 @@ router.post('/forgot_password', async (req, res) => {
     `.trim(),
   })
 
+  const log = new securityLog({
+    ipAddress: req.ip,
+    description: "FORGOT_PASSWORD_REQUESTED",
+    userId: user._id,
+  });
+
+  log.save();
+
   return res.sendStatus(200);
 })
 
@@ -270,6 +287,15 @@ router.post('/change_password', async (req, res) => {
   )
     .lean()
     .exec();
+
+  
+  const log = new securityLog({
+    ipAddress: req.ip,
+    description: "PASSWORD_CHANGED",
+    userId,
+  });
+
+  log.save();
   
   res.json({ success: true });
 })
