@@ -117,7 +117,7 @@ router.post('/login', async (req, res) => {
   try {
     await reqSchema.validateAsync(req.body);
   } catch (err) {
-    res.status(400).json({
+    return res.status(400).json({
       error: 'Missing parameters',
     });
   }
@@ -168,7 +168,7 @@ router.post('/refresh', async (req, res) => {
   try {
     await reqSchema.validateAsync(req.body);
   } catch (err) {
-    res.status(400).json({
+    return res.status(400).json({
       error: 'Missing parameters',
     });
   }
@@ -180,7 +180,7 @@ router.post('/refresh', async (req, res) => {
     return res.json(error)
   }
 
-  res.json({ ...newTokens });
+  return res.json({ ...newTokens });
 })
 
 router.post('/revokeToken', async (req, res) => {
@@ -191,7 +191,7 @@ router.post('/revokeToken', async (req, res) => {
   try {
     await reqSchema.validateAsync(req.body);
   } catch (err) {
-    res.status(400).json({
+    return res.status(400).json({
       error: 'Missing parameters',
     });
   }
@@ -203,7 +203,7 @@ router.post('/revokeToken', async (req, res) => {
     refreshAuthCount: user.refreshAuthCount + 1,
   }).exec();
 
-  res.sendStatus(200);
+  return res.sendStatus(200);
 })
 
 router.post('/forgot_password', async (req, res) => {
@@ -311,7 +311,7 @@ router.post('/change_password', async (req, res) => {
 
   log.save();
   
-  res.json({ success: true });
+  return res.json({ success: true });
 })
 
 
