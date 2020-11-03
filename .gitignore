@@ -7,7 +7,6 @@
 /dist
 # testing
 /coverage
-/nodemon.json
 
 # production
 /build
