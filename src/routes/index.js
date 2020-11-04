@@ -9,4 +9,7 @@ router.use('/auth', require('./auth'));
 router.use('/users', authCheck);
 router.use('/users', require('./user'));
 
+router.use('/datasets', authCheck);
+router.use('/datasets', require('./datasets'));
+
 module.exports = router;
