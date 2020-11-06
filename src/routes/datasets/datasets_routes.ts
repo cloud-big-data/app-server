@@ -4,6 +4,7 @@ import expressUpload from 'express-fileupload';
 import parseFormData from './lib/parseFormData';
 import aws from 'aws-sdk';
 import Dataset from '../../models/dataset';
+import * as R from 'ramda';
 
 const router = express.Router();
 
@@ -25,6 +26,26 @@ router.get('/', async (req: any, res) => {
   return res.json(datasets);
 })
 
+router.patch('/:datasetId', async (req: any, res) => {
+  await Dataset.findByIdAndUpdate(req.params.datasetId, req.body).lean().exec();
+  return res.sendStatus(200);
+})
+
+router.delete('/:datasetId', async (req: any, res) => {
+  try {
+    await Dataset.findByIdAndDelete(req.params.datasetId).lean().exec();
+    const s3Params = {
+      Bucket: 'skyvue-datasets',
+      Key: `${req.user._id}-${req.params.datasetId}`
+    }
+    await s3.deleteObject(s3Params).promise();
+
+    return res.sendStatus(200);
+  } catch (e) {
+    return res.sendStatus(500);
+  }
+})
+
 router.post('/upload', async (req: any, res) => {
   const csvAsJson: Array<any> = await csv().fromString(req.files.csv.data.toString('utf8'));
   const userId = req.user._id.toString();
@@ -39,6 +60,8 @@ router.post('/upload', async (req: any, res) => {
   })
 
   await dataset.save();
+
+  console.log(R.omit(['title'], boardData));
 
   const s3Params = {
     Bucket: 'skyvue-datasets',
