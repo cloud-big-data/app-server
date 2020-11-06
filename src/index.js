@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/', async (req, res) => {
-  res.send('hello from Skyvue!');
+  res.send('hello from Skyvue!!');
 });
 
 app.get('/health_check', async (req, res) => {
