@@ -61,12 +61,10 @@ router.post('/upload', async (req: any, res) => {
 
   await dataset.save();
 
-  console.log(R.omit(['title'], boardData));
-
   const s3Params = {
     Bucket: 'skyvue-datasets',
     Key: `${userId}-${dataset._id}`,
-    Body: JSON.stringify(boardData),
+    Body: JSON.stringify(R.omit(['title'], boardData)),
     ContentType: 'application/json',
   };
 
