@@ -16,8 +16,9 @@ const parseFormData = (fileName: string, userId: string, csvAsJson: Array<any>):
     value: key,
     dataType: parseDataType(csvAsJson[0][key]),
   })),
-  rows: csvAsJson.map(row => ({
+  rows: csvAsJson.map((row, index) => ({
     _id: uuidv4(),
+    index,
     cells: R.pipe(
       R.values,
       R.map(row => ({

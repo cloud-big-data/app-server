@@ -24,12 +24,12 @@ export interface IColumn extends ICell {
 
 export interface IRow {
   _id: string;
+  index: number;
   cells: ICell[];
   /**
    * rowHeight: The height of the row, in px.
    */
   rowHeight?: number;
-  dragging?: boolean;
 }
 
 type UserId = string;
