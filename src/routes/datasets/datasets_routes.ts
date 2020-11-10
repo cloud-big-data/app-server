@@ -26,6 +26,11 @@ router.get('/', async (req: any, res) => {
   return res.json(datasets);
 })
 
+router.get('/:datasetId', async (req: any, res) => {
+  const dataset = await Dataset.findById(req.params.datasetId).lean().exec()
+  return res.json(dataset);
+})
+
 router.patch('/:datasetId', async (req: any, res) => {
   await Dataset.findByIdAndUpdate(req.params.datasetId, req.body).lean().exec();
   return res.sendStatus(200);
