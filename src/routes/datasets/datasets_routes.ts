@@ -27,8 +27,15 @@ router.get('/', async (req: any, res) => {
 })
 
 router.get('/:datasetId', async (req: any, res) => {
-  const dataset = await Dataset.findById(req.params.datasetId).lean().exec()
-  return res.json(dataset);
+  const { datasetId } = req.params;
+  const dataset = await Dataset.findById(datasetId).lean().exec()
+  const s3Params = {
+    Bucket: 'skyvue-datasets',
+    Key: `${req.user._id}-${datasetId}`
+  }
+  const head = await s3.headObject(s3Params).promise();
+
+  return res.json({ dataset, head });
 })
 
 router.patch('/:datasetId', async (req: any, res) => {
