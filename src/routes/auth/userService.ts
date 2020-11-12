@@ -168,6 +168,7 @@ router.post('/refresh', async (req, res) => {
   try {
     await reqSchema.validateAsync(req.body);
   } catch (err) {
+    console.log(err);
     return res.status(400).json({
       error: 'Missing parameters',
     });
