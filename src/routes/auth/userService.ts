@@ -165,6 +165,8 @@ router.post('/refresh', async (req, res) => {
     refreshToken: Joi.string().required(),
   })
 
+  console.log(req.body);
+
   try {
     await reqSchema.validateAsync(req.body);
   } catch (err) {
