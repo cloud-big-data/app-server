@@ -12,7 +12,10 @@ const refreshUser = async (refreshToken: string): Promise<any> => {
   }
 
   const user = await User.findById(decodedRefreshToken.userId).lean().exec();
+
   if (user.refreshAuthCount !== decodedRefreshToken.count) {
+    const date = new Date();
+    console.log(`error at ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`, user, decodedRefreshToken);
     return { error: 'Authorization error' }
   }
 

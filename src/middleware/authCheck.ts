@@ -12,20 +12,7 @@ const authCheck = async (req, res, next) => {
     return res.status(401).json({ error: "invalid_token" })
   }
 
-  if (error) {
-    if (decodedAccessToken.name === 'TokenExpiredError' && refreshToken) {
-      const { error, ...newTokens } = await refreshUser(refreshToken);
-
-      if (error) {
-        return res.status(401).json(error);
-      }
-
-      return res.json({ error: 'token_refresh_required' });
-    }
-
-    return res.status(401).json({ ...decodedAccessToken })
-  }
-
+  console.log(decodedAccessToken);
   const user = await loadUser(decodedAccessToken.userId);
   req.user = user;
 

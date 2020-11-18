@@ -161,25 +161,23 @@ router.post('/login', async (req, res) => {
 })
 
 router.post('/refresh', async (req, res) => {
+  console.log('\n\n/refresh\n\n');
   const reqSchema = Joi.object({
     refreshToken: Joi.string().required(),
   })
-
-  console.log(req.body);
 
   try {
     await reqSchema.validateAsync(req.body);
   } catch (err) {
     console.log(err);
-    return res.status(400).json({
-      error: 'Missing parameters',
-    });
+    return res.status(400).json(err);
   }
 
   const { refreshToken } = req.body;
   const { error, ...newTokens } = await refreshUser(refreshToken);
 
   if (error) {
+    console.log('error on refresh', error);
     return res.json(error)
   }
 
