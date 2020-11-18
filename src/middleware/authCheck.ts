@@ -12,7 +12,6 @@ const authCheck = async (req, res, next) => {
     return res.status(401).json({ error: "invalid_token" })
   }
 
-  console.log(decodedAccessToken);
   const user = await loadUser(decodedAccessToken.userId);
   req.user = user;
 

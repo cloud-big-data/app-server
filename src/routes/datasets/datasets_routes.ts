@@ -23,8 +23,6 @@ router.get('/', async (req: any, res) => {
     userId: req.user._id.toString(),
   }).lean().exec()
 
-  console.log(datasets);
-
   return res.json(datasets);
 })
 
