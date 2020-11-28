@@ -3,12 +3,12 @@ import { DataTypes } from '../../../types';
 
 const parseDataType = (value: string): DataTypes => {
   if (moment(value, moment.ISO_8601, true).isValid()) {
-    return DataTypes.date;
+    return 'date';
   }
-  if (!isNaN(parseInt(value))) {
-    return DataTypes.number;
+  if (/^\d+$/.test(value)) {
+    return 'number';
   }
-  return DataTypes.string;
+  return 'string';
 }
 
 export default parseDataType;

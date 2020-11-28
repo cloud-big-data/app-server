@@ -3,11 +3,7 @@ export interface ValueSet {
   value: string;
 }
 
-export enum DataTypes {
-  number,
-  string,
-  date,
-}
+export type DataTypes = 'number' | 'string' | 'date';
 
 export interface ICell {
   _id: string;
