@@ -45,7 +45,7 @@ const User = new Schema(
     },
     lastLoggedIn: {
       type: String,
-    }
+    },
   },
   {
     timestamps: true,
@@ -56,18 +56,18 @@ const model = Mongoose.model<IUser>('user', User);
 
 export const loadUser = async (userId: string) => {
   const user = await model.findById(userId).lean().exec();
-  
+
   return {
-    _id: user._id,
-    roles: user.roles,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    phone: user.phone,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    lastLoggedIn: user.lastLoggedIn,
-  }
-}
+    _id: user?._id,
+    roles: user?.roles,
+    firstName: user?.firstName,
+    lastName: user?.lastName,
+    email: user?.email,
+    phone: user?.phone,
+    createdAt: user?.createdAt,
+    updatedAt: user?.updatedAt,
+    lastLoggedIn: user?.lastLoggedIn,
+  };
+};
 
 export default model;
