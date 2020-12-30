@@ -55,8 +55,8 @@ const User = new Schema(
 const model = Mongoose.model<IUser>('user', User);
 
 export const loadUser = async (userId: string) => {
+  if (!userId) return;
   const user = await model.findById(userId).lean().exec();
-
   return {
     _id: user?._id,
     roles: user?.roles,

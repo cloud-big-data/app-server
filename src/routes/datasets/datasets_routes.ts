@@ -20,7 +20,7 @@ router.use(expressUpload());
 
 router.get('/', async (req: any, res) => {
   const datasets = await Dataset.find({
-    userId: req.user._id.toString(),
+    userId: req.user?._id?.toString(),
   })
     .lean()
     .exec();
@@ -62,6 +62,49 @@ router.delete('/:datasetId', async (req: any, res) => {
   } catch (e) {
     return res.sendStatus(500);
   }
+});
+
+router.post('/duplicate/:datasetId', async (req: any, res) => {
+  const { newTitle, raw } = req.body;
+  const { datasetId } = req.params;
+
+  if (!datasetId || !req.user._id) res.sendStatus(400);
+
+  const current = await Dataset.findById(datasetId).lean().exec();
+  const newDataset = new Dataset({
+    userId: req.user._id,
+    title: newTitle ?? `${current.title} (copy)`,
+    visibilitySettings: {
+      owner: req.user._id,
+    },
+  });
+
+  await newDataset.save();
+
+  if (raw) {
+    const s3Params = {
+      Bucket: 'skyvue-datasets',
+      Key: `${req.user._id}-${current._id}`,
+    };
+    const s3Res = await s3.getObject(s3Params).promise();
+    const currentBoardData = JSON.parse(s3Res.Body.toString('utf-8'));
+
+    try {
+      await s3
+        .putObject({
+          ...s3Params,
+          Key: `${req.user._id}-${newDataset._id}`,
+          Body: JSON.stringify(R.omit(['title'], currentBoardData)),
+          ContentType: 'application/json',
+        })
+        .promise();
+    } catch (e) {
+      console.log(e);
+      return res.sendStatus(500);
+    }
+  }
+
+  res.json(newDataset);
 });
 
 router.post('/upload', async (req: any, res) => {

@@ -20,12 +20,12 @@ const Dataset = new Schema(
       owner: String,
       editors: [String],
       viewers: [String],
-    }
+    },
   },
   {
     timestamps: true,
-  }
-)
+  },
+);
 
 const model = Mongoose.model<IDataset>('dataset', Dataset);
 

@@ -6,16 +6,21 @@ const authCheck = async (req, res, next) => {
   const accessToken = req.headers.authorization.substring('bearer '.length);
   const refreshToken = req.headers['x-refresh-token'];
 
-  const {error, ...decodedAccessToken} = verifyAccessToken(accessToken, process.env.JWT_SECRET);
+  const { error, ...decodedAccessToken } = verifyAccessToken(
+    accessToken,
+    process.env.JWT_SECRET,
+  );
 
   if (!accessToken || !refreshToken) {
-    return res.status(401).json({ error: "invalid_token" })
+    return res.status(401).json({ error: 'invalid_token' });
   }
 
-  const user = await loadUser(decodedAccessToken.userId);
+  const user = decodedAccessToken.userId
+    ? await loadUser(decodedAccessToken.userId)
+    : {};
   req.user = user;
 
   next();
-}
+};
 
 export default authCheck;
