@@ -1,8 +1,13 @@
-import refreshUser from '../routes/auth/lib/refreshUser';
+import { Response, NextFunction } from 'express';
+import { AuthenticatedRoute } from 'types/requestTypes';
 import verifyAccessToken from '../lib/verifyAccessToken';
-import User, { loadUser } from '../models/user';
+import { loadUser } from '../models/user';
 
-const authCheck = async (req, res, next) => {
+const authCheck = async (
+  req: AuthenticatedRoute,
+  res: Response,
+  next: NextFunction,
+) => {
   const accessToken = req.headers.authorization.substring('bearer '.length);
   const refreshToken = req.headers['x-refresh-token'];
 
@@ -11,13 +16,11 @@ const authCheck = async (req, res, next) => {
     process.env.JWT_SECRET,
   );
 
-  if (!accessToken || !refreshToken) {
+  if (!accessToken || !refreshToken || !decodedAccessToken.userId) {
     return res.status(401).json({ error: 'invalid_token' });
   }
 
-  const user = decodedAccessToken.userId
-    ? await loadUser(decodedAccessToken.userId)
-    : {};
+  const user = await loadUser(decodedAccessToken.userId);
   req.user = user;
 
   next();

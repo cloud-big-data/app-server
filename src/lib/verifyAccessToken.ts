@@ -7,9 +7,9 @@ const verifyAccessToken = (refreshToken: string, secret: string) => {
   } catch (e) {
     return {
       error: true,
-      ...e
+      ...e,
     };
   }
-}
+};
 
 export default verifyAccessToken;

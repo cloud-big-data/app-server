@@ -3,10 +3,13 @@ import csv from 'csvtojson';
 import expressUpload from 'express-fileupload';
 import aws from 'aws-sdk';
 import * as R from 'ramda';
+import { AuthenticatedRoute } from 'types/requestTypes';
+import authCheck from '../../middleware/authCheck';
 import parseFormData from './lib/parseFormData';
 import Dataset from '../../models/dataset';
 
 const router = express.Router();
+router.use('/datasets', authCheck);
 
 const awsConfig = new aws.Config({
   region: 'us-west-1',
@@ -18,9 +21,9 @@ const s3 = new aws.S3(awsConfig);
 
 router.use(expressUpload());
 
-router.get('/', async (req: any, res) => {
+router.get('/', async (req: AuthenticatedRoute, res) => {
   const datasets = await Dataset.find({
-    userId: req.user?._id?.toString(),
+    userId: req.user._id.toString(),
   })
     .lean()
     .exec();
@@ -28,7 +31,7 @@ router.get('/', async (req: any, res) => {
   return res.json(datasets);
 });
 
-router.get('/:datasetId', async (req: any, res) => {
+router.get('/:datasetId', async (req: AuthenticatedRoute, res) => {
   const { datasetId } = req.params;
   const dataset = await Dataset.findById(datasetId).lean().exec();
   const s3Params = {
@@ -44,12 +47,12 @@ router.get('/:datasetId', async (req: any, res) => {
   }
 });
 
-router.patch('/:datasetId', async (req: any, res) => {
+router.patch('/:datasetId', async (req: AuthenticatedRoute, res) => {
   await Dataset.findByIdAndUpdate(req.params.datasetId, req.body).lean().exec();
   return res.sendStatus(200);
 });
 
-router.delete('/:datasetId', async (req: any, res) => {
+router.delete('/:datasetId', async (req: AuthenticatedRoute, res) => {
   try {
     await Dataset.findByIdAndDelete(req.params.datasetId).lean().exec();
     const s3Params = {
@@ -64,7 +67,7 @@ router.delete('/:datasetId', async (req: any, res) => {
   }
 });
 
-router.post('/duplicate/:datasetId', async (req: any, res) => {
+router.post('/duplicate/:datasetId', async (req: AuthenticatedRoute, res) => {
   const { newTitle, raw } = req.body;
   const { datasetId } = req.params;
 
@@ -107,11 +110,13 @@ router.post('/duplicate/:datasetId', async (req: any, res) => {
   res.json(newDataset);
 });
 
-router.post('/upload', async (req: any, res) => {
+router.post('/upload', async (req: AuthenticatedRoute, res) => {
   const csvAsJson: Array<any> = await csv().fromString(
+    // @ts-ignore
     req.files.csv.data.toString('utf8'),
   );
   const userId = req.user._id.toString();
+  // @ts-ignore
   const { name } = req.files.csv;
   const fileName = name.substring(0, name.length - '.csv'.length);
   const boardData = parseFormData(fileName, userId, csvAsJson);

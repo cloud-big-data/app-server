@@ -1,6 +1,6 @@
 import Mongoose, { Schema, Document } from 'mongoose';
 
-interface IUser extends Document {
+export interface IUser {
   firstName: string;
   lastName: string;
   email: string;
@@ -13,6 +13,8 @@ interface IUser extends Document {
   createdAt: string;
   lastLoggedIn: string;
 }
+
+export interface IUserSchema extends Document, IUser {}
 
 const User = new Schema(
   {
@@ -52,22 +54,11 @@ const User = new Schema(
   },
 );
 
-const model = Mongoose.model<IUser>('user', User);
+const model = Mongoose.model<IUserSchema>('user', User);
 
-export const loadUser = async (userId: string) => {
+export const loadUser = async (userId: string): Promise<IUser & { _id: string }> => {
   if (!userId) return;
-  const user = await model.findById(userId).lean().exec();
-  return {
-    _id: user?._id,
-    roles: user?.roles,
-    firstName: user?.firstName,
-    lastName: user?.lastName,
-    email: user?.email,
-    phone: user?.phone,
-    createdAt: user?.createdAt,
-    updatedAt: user?.updatedAt,
-    lastLoggedIn: user?.lastLoggedIn,
-  };
+  return model.findById(userId).lean().exec();
 };
 
 export default model;
