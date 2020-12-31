@@ -9,7 +9,6 @@ import parseFormData from './lib/parseFormData';
 import Dataset from '../../models/dataset';
 
 const router = express.Router();
-router.use('/datasets', authCheck);
 
 const awsConfig = new aws.Config({
   region: 'us-west-1',
@@ -19,11 +18,12 @@ const awsConfig = new aws.Config({
 
 const s3 = new aws.S3(awsConfig);
 
+router.use(authCheck);
 router.use(expressUpload());
 
 router.get('/', async (req: AuthenticatedRoute, res) => {
   const datasets = await Dataset.find({
-    userId: req.user._id.toString(),
+    userId: req.user?._id.toString(),
   })
     .lean()
     .exec();
