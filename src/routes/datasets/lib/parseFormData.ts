@@ -1,10 +1,13 @@
-import { IBoardData } from '../../../types';
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import * as R from 'ramda';
+import { IBoardData } from '../../../types';
 import parseDataType from './parseDataType';
 
-
-const parseFormData = (fileName: string, userId: string, csvAsJson: Array<any>): IBoardData => ({
+const parseFormData = (
+  fileName: string,
+  userId: string,
+  csvAsJson: Array<any>,
+): IBoardData => ({
   title: fileName,
   visibilitySettings: {
     owner: userId,
@@ -24,9 +27,13 @@ const parseFormData = (fileName: string, userId: string, csvAsJson: Array<any>):
       R.map(row => ({
         _id: uuidv4(),
         value: row,
-      }))
-    )(row)
+      })),
+    )(row),
   })),
-})
+  layerToggles: {
+    groupings: true,
+    filters: true,
+  },
+});
 
 export default parseFormData;

@@ -45,6 +45,10 @@ export interface IBoardData {
   };
   columns: IColumn[];
   rows: IRow[];
+  layerToggles: {
+    filters: boolean;
+    groupings: boolean;
+  }
 }
 
 /**
