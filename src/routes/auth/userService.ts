@@ -223,7 +223,7 @@ router.post('/forgot_password', async (req, res) => {
 
   const passwordResetToken = makePasswordResetToken(user._id);
   const baseUrl =
-    process.env.ENVIRONMENT === 'dev'
+    process.env.ENVIRONMENT === 'development'
       ? 'http://localhost:3000'
       : 'https://app.skyvue.io';
   emailService.sendMail({

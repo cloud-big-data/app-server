@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
   origin:
-    process.env.ENVIRONMENT === 'dev'
+    process.env.ENVIRONMENT === 'development'
       ? 'http://localhost:3000'
       : 'https://app.skyvue.io',
   optionsSuccessStatus: 200,
