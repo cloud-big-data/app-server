@@ -48,7 +48,11 @@ router.get('/:datasetId', async (req: AuthenticatedRoute, res) => {
 });
 
 router.patch('/:datasetId', async (req: AuthenticatedRoute, res) => {
-  await Dataset.findByIdAndUpdate(req.params.datasetId, req.body).lean().exec();
+  try {
+    await Dataset.findByIdAndUpdate(req.params.datasetId, req.body).lean().exec();
+  } catch (e) {
+    return res.status(500).json({ error: e });
+  }
   return res.sendStatus(200);
 });
 

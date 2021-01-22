@@ -35,6 +35,7 @@ router.post('/create', async (req, res) => {
   try {
     await reqSchema.validateAsync(req.body);
   } catch (err) {
+    console.log(err);
     res.status(400).json({
       error: 'Missing parameters',
     });
@@ -66,7 +67,7 @@ router.post('/create', async (req, res) => {
     console.error(e);
 
     if (e.code === 11000) {
-      return res.status(400).json({ error: 'email_exists' });
+      return res.status(409).json({ error: 'email_exists' });
     }
 
     return res.status(400).json({ error: 'unknown_error' });
