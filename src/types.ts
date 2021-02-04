@@ -48,6 +48,8 @@ export interface IBoardData {
   layerToggles: {
     filters: boolean;
     groupings: boolean;
+    joins: boolean;
+    smartColumns: boolean;
   }
 }
 

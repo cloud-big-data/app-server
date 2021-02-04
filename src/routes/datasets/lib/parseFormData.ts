@@ -33,6 +33,8 @@ const parseFormData = (
   layerToggles: {
     groupings: true,
     filters: true,
+    joins: true,
+    smartColumns: true,
   },
 });
 
