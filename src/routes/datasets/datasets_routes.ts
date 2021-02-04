@@ -36,7 +36,7 @@ router.get('/:datasetId', async (req: AuthenticatedRoute, res) => {
   const dataset = await Dataset.findById(datasetId).lean().exec();
   const s3Params = {
     Bucket: 'skyvue-datasets',
-    Key: `${req.user._id}-${datasetId}`,
+    Key: datasetId.toString(),
   };
   try {
     const head = await s3.headObject(s3Params).promise();
@@ -61,7 +61,7 @@ router.delete('/:datasetId', async (req: AuthenticatedRoute, res) => {
     await Dataset.findByIdAndDelete(req.params.datasetId).lean().exec();
     const s3Params = {
       Bucket: 'skyvue-datasets',
-      Key: `${req.user._id}-${req.params.datasetId}`,
+      Key: req.params.datasetId.toString(),
     };
     await s3.deleteObject(s3Params).promise();
 
@@ -91,7 +91,7 @@ router.post('/duplicate/:datasetId', async (req: AuthenticatedRoute, res) => {
   if (raw) {
     const s3Params = {
       Bucket: 'skyvue-datasets',
-      Key: `${req.user._id}-${current._id}`,
+      Key: current._id.toString(),
     };
     const s3Res = await s3.getObject(s3Params).promise();
     const currentBoardData = JSON.parse(s3Res.Body.toString('utf-8'));
@@ -100,7 +100,7 @@ router.post('/duplicate/:datasetId', async (req: AuthenticatedRoute, res) => {
       await s3
         .putObject({
           ...s3Params,
-          Key: `${req.user._id}-${newDataset._id}`,
+          Key: newDataset._id.toString(),
           Body: JSON.stringify(R.omit(['title'], currentBoardData)),
           ContentType: 'application/json',
         })
@@ -135,7 +135,7 @@ router.post('/upload', async (req: AuthenticatedRoute, res) => {
 
   const s3Params = {
     Bucket: 'skyvue-datasets',
-    Key: `${userId}-${dataset._id}`,
+    Key: dataset._id.toString(),
     Body: JSON.stringify(R.omit(['title'], boardData)),
     ContentType: 'application/json',
   };
