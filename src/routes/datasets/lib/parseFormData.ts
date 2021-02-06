@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import { IBoardData } from '../../../types';
 import parseDataType from './parseDataType';
 
+console.log('hi');
 const parseFormData = (
   fileName: string,
   userId: string,
