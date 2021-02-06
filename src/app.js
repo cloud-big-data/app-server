@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 5000;
 const CORS_LOOKUP = {
   development: ['http://localhost:3000'],
   staging: [],
-  production: ['app.skyvue.io'],
+  production: ['https://app.skyvue.io'],
 };
 
 const corsOptionsDelegate = function (req, callback) {
