@@ -33,17 +33,16 @@ router.get('/', async (req: AuthenticatedRoute, res) => {
 
 router.get('/:datasetId', async (req: AuthenticatedRoute, res) => {
   const { datasetId } = req.params;
-  const dataset = await Dataset.findById(datasetId).lean().exec();
-  const s3Params = {
-    Bucket: 'skyvue-datasets',
-    Key: datasetId.toString(),
-  };
   try {
+    const dataset = await Dataset.findById(datasetId).lean().exec();
+    const s3Params = {
+      Bucket: 'skyvue-datasets',
+      Key: datasetId.toString(),
+    };
     const head = await s3.headObject(s3Params).promise();
     res.json({ dataset, head });
   } catch (e) {
-    console.log(e, `${req.user._id}-${datasetId}`);
-    res.sendStatus(500);
+    res.status(404).json({});
   }
 });
 
