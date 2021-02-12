@@ -50,7 +50,7 @@ router.patch('/:datasetId', async (req: AuthenticatedRoute, res) => {
   try {
     await Dataset.findByIdAndUpdate(req.params.datasetId, req.body).lean().exec();
   } catch (e) {
-    return res.status(500).json({ error: e });
+    return res.status(400).json({ error: e });
   }
   return res.sendStatus(200);
 });
@@ -66,7 +66,7 @@ router.delete('/:datasetId', async (req: AuthenticatedRoute, res) => {
 
     return res.sendStatus(200);
   } catch (e) {
-    return res.sendStatus(500);
+    return res.sendStatus(400);
   }
 });
 
@@ -106,7 +106,7 @@ router.post('/duplicate/:datasetId', async (req: AuthenticatedRoute, res) => {
         .promise();
     } catch (e) {
       console.log(e);
-      return res.sendStatus(500);
+      return res.sendStatus(400);
     }
   }
 
@@ -144,7 +144,7 @@ router.post('/upload', async (req: AuthenticatedRoute, res) => {
     res.status(200).json({ success: true });
   } catch (e) {
     console.log(e);
-    res.sendStatus(500);
+    res.sendStatus(400);
   }
 });
 
