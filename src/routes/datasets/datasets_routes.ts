@@ -10,13 +10,12 @@ import Dataset from '../../models/dataset';
 
 const router = express.Router();
 
-const awsConfig = new aws.Config({
-  region: 'us-west-1',
-  accessKeyId: process.env.AWS_ACCESS_KEY,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
+const s3 = new aws.S3({
+  endpoint: spacesEndpoint,
+  accessKeyId: process.env.SPACES_KEY,
+  secretAccessKey: process.env.SPACES_SECRET,
 });
-
-const s3 = new aws.S3(awsConfig);
 
 router.use(authCheck);
 router.use(expressUpload());
