@@ -21,6 +21,8 @@ const authCheck = async (
   }
 
   const user = await loadUser(decodedAccessToken.userId);
+
+  if (user.shouldLogOut) return res.status(401).json({ error: 'logged_out' });
   req.user = user;
 
   next();

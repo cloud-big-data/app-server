@@ -9,6 +9,7 @@ export interface IUser {
   stripeId: string;
   roles: string;
   refreshAuthCount: number;
+  shouldLogOut: boolean;
   updatedAt: string;
   createdAt: string;
   lastLoggedIn: string;
@@ -41,6 +42,7 @@ const User = new Schema(
       enum: ['admin', 'editor', 'viewOnly'],
       default: 'admin',
     },
+    shouldLogOut: Boolean,
     refreshAuthCount: {
       type: Number,
       default: 0,

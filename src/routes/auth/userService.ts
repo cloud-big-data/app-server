@@ -86,7 +86,6 @@ router.post('/create', async (req, res) => {
   const { refreshToken, accessToken } = createTokens({
     userId: user._id,
     email,
-    count: 0,
   });
 
   emailService.sendMail({
@@ -143,6 +142,7 @@ router.post('/login', async (req, res) => {
     user._id,
     {
       refreshAuthCount: user.refreshAuthCount + 1,
+      shouldLogOut: false,
       lastLoggedIn: moment().format(),
     },
     { new: true },
@@ -151,7 +151,6 @@ router.post('/login', async (req, res) => {
   const { refreshToken, accessToken } = createTokens({
     userId: user._id,
     email,
-    count: userWithUpdatedCount.refreshAuthCount,
   });
 
   const log = new SecurityLog({
@@ -202,10 +201,8 @@ router.post('/revokeToken', async (req, res) => {
   }
 
   const { userId } = req.body;
-  const user = await User.findById(userId).lean().exec();
-
   await User.findByIdAndUpdate(userId, {
-    refreshAuthCount: user.refreshAuthCount + 1,
+    shouldLogOut: true,
   }).exec();
 
   return res.sendStatus(200);
