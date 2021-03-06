@@ -20,7 +20,7 @@ const CORS_LOOKUP = {
 const corsOptionsDelegate = function (req, callback) {
   const allowList = CORS_LOOKUP[process.env.ENVIRONMENT];
   const corsOptions =
-    req.header('Origin').includes('netlify.app') ||
+    req.header('Origin')?.includes('netlify.app') ||
     allowList.indexOf(req.header('Origin')) !== -1
       ? { origin: true }
       : { origin: false };
