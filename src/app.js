@@ -12,7 +12,7 @@ require('./models').connect(config.dbUri);
 const PORT = process.env.PORT || 5000;
 
 const CORS_LOOKUP = {
-  development: ['http://localhost:3000'],
+  development: ['http://localhost:3000', 'http://localhost:8888'],
   staging: [],
   production: ['https://app.skyvue.io'],
 };
