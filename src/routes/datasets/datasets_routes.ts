@@ -37,7 +37,7 @@ router.get('/make_dataset_upload_url', async (req: AuthenticatedRoute, res) => {
       Fields: {
         key: 'testing',
       },
-      Conditions: [['start-with', '$Content-Type', 'text/csv']],
+      Conditions: [['starts-with', '$Content-Type', 'text/']],
       Expires: 30,
       Bucket: 'skyvue-datasets',
     },
