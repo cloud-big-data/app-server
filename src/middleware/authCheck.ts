@@ -8,15 +8,18 @@ const authCheck = async (
   res: Response,
   next: NextFunction,
 ) => {
+  if (!req.headers?.authorization) {
+    return res.status(401).json({ error: 'logged_out' });
+  }
+
   const accessToken = req.headers.authorization.substring('bearer '.length);
-  const refreshToken = req.headers['x-refresh-token'];
 
   const { error, ...decodedAccessToken } = verifyAccessToken(
     accessToken,
     process.env.JWT_SECRET,
   );
 
-  if (!accessToken || !refreshToken || !decodedAccessToken.userId) {
+  if (!accessToken || !decodedAccessToken.userId) {
     return res.status(401).json({ error: 'invalid_token' });
   }
 

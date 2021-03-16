@@ -30,6 +30,24 @@ router.get('/', async (req: AuthenticatedRoute, res) => {
   return res.json(datasets);
 });
 
+router.get('/make_dataset_upload_url', async (req: AuthenticatedRoute, res) => {
+  console.log('i made it here');
+  s3.createPresignedPost(
+    {
+      Fields: {
+        key: 'testing',
+      },
+      Conditions: [['start-with', '$Content-Type', 'text/csv']],
+      Expires: 30,
+      Bucket: 'skyvue-datasets',
+    },
+    (error, signed) => {
+      console.log(signed, error);
+      res.json(signed);
+    },
+  );
+});
+
 router.get('/:datasetId', async (req: AuthenticatedRoute, res) => {
   const { datasetId } = req.params;
   try {

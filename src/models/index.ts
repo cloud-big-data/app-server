@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const handleMongoError = err => {
   console.error(`Mongoose connection error: ${err}`);
   process.exit(1);
-}
+};
 
 module.exports.connect = async (uri: string) => {
   await mongoose
@@ -15,7 +15,7 @@ module.exports.connect = async (uri: string) => {
     })
     .catch(handleMongoError);
 
-  mongoose.connection.on("error", handleMongoError);
+  mongoose.connection.on('error', handleMongoError);
 };
 
 module.exports.close = () => {
