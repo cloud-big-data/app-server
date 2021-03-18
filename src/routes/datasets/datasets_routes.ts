@@ -30,19 +30,35 @@ router.get('/', async (req: AuthenticatedRoute, res) => {
   return res.json(datasets);
 });
 
-router.get('/make_dataset_upload_url', async (req: AuthenticatedRoute, res) => {
-  console.log('i made it here');
+router.post('/make_dataset_upload_url', async (req: AuthenticatedRoute, res) => {
+  const { title } = req.body;
+  const userId = req.user._id;
+
+  const dataset = new Dataset({
+    userId,
+    title,
+    visibilitySettings: {
+      owner: userId,
+      editors: [userId],
+      viewers: [],
+    },
+  });
+
   s3.createPresignedPost(
     {
       Fields: {
-        key: 'testing',
+        key: dataset._id,
       },
       Conditions: [['starts-with', '$Content-Type', 'text/']],
       Expires: 30,
-      Bucket: 'skyvue-datasets',
+      Bucket: 'skyvue-datasets-queue',
     },
-    (error, signed) => {
-      console.log(signed, error);
+    async (error, signed) => {
+      if (error) {
+        return res.status(500).json({ error: 'Upload error' });
+      }
+
+      await dataset.save();
       res.json(signed);
     },
   );
