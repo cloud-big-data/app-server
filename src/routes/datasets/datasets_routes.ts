@@ -4,6 +4,7 @@ import expressUpload from 'express-fileupload';
 import aws from 'aws-sdk';
 import * as R from 'ramda';
 import { AuthenticatedRoute } from 'types/requestTypes';
+import datasetService from '../../services/datasetService';
 import authCheck from '../../middleware/authCheck';
 import parseFormData from './lib/parseFormData';
 import Dataset from '../../models/dataset';
@@ -62,6 +63,30 @@ router.post('/make_dataset_upload_url', async (req: AuthenticatedRoute, res) => 
       res.json(signed);
     },
   );
+});
+
+router.post('/process_dataset', async (req: AuthenticatedRoute, res) => {
+  const { body } = req;
+  const { key } = body;
+  if (!key) return res.sendStatus(400);
+
+  try {
+    const processRes = await datasetService.post('/datasets/process_dataset', {
+      key,
+      userId: req.user._id,
+    });
+
+    if (processRes.status === 200) {
+      await Dataset.findByIdAndUpdate(key, {
+        isProcessing: false,
+      });
+    }
+
+    res.sendStatus(processRes.status);
+  } catch (e) {
+    console.error('error in processing dataset', e);
+    res.sendStatus(500);
+  }
 });
 
 router.get('/:datasetId', async (req: AuthenticatedRoute, res) => {
@@ -146,6 +171,7 @@ router.post('/duplicate/:datasetId', async (req: AuthenticatedRoute, res) => {
   res.json(newDataset);
 });
 
+// deprecated, do not use
 router.post('/upload', async (req: AuthenticatedRoute, res) => {
   const csvAsJson: Array<any> = await csv().fromString(
     // @ts-ignore
