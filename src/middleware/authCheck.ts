@@ -14,6 +14,11 @@ const authCheck = async (
 
   const accessToken = req.headers.authorization.substring('bearer '.length);
 
+  if (accessToken === process.env.DATASET_SERVICE_SECRET) {
+    next();
+    return;
+  }
+
   const { error, ...decodedAccessToken } = verifyAccessToken(
     accessToken,
     process.env.JWT_SECRET,
