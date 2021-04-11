@@ -73,16 +73,10 @@ router.post('/process_dataset', async (req: AuthenticatedRoute, res) => {
   try {
     res.sendStatus(200);
 
-    const processRes = await datasetService.post('/datasets/process_dataset', {
+    await datasetService.post('/datasets/process_dataset', {
       key,
       userId: req.user._id,
     });
-
-    if (processRes.status === 200) {
-      await Dataset.findByIdAndUpdate(key, {
-        isProcessing: false,
-      });
-    }
   } catch (e) {
     console.error('error in processing dataset', e);
     res.sendStatus(500);
