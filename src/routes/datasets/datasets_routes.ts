@@ -11,11 +11,10 @@ import Dataset from '../../models/dataset';
 
 const router = express.Router();
 
-const spacesEndpoint = new aws.Endpoint('nyc3.digitaloceanspaces.com');
 const s3 = new aws.S3({
-  endpoint: spacesEndpoint,
-  accessKeyId: process.env.SPACES_KEY,
-  secretAccessKey: process.env.SPACES_SECRET,
+  region: 'us-east-2',
+  accessKeyId: process.env.AWS_ACCESSKEY,
+  secretAccessKey: process.env.AWS_SECRET_ACCESSKEY,
 });
 
 router.use(authCheck);
@@ -89,7 +88,7 @@ router.get('/:datasetId', async (req: AuthenticatedRoute, res) => {
     const dataset = await Dataset.findById(datasetId).lean().exec();
     const s3Params = {
       Bucket: 'skyvue-datasets',
-      Key: datasetId.toString(),
+      Key: `${datasetId.toString()}/columns`,
     };
     const head = await s3.headObject(s3Params).promise();
     res.json({ dataset, head });
