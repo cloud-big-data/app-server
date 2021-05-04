@@ -47,7 +47,7 @@ router.post('/make_dataset_upload_url', async (req: AuthenticatedRoute, res) => 
   s3.createPresignedPost(
     {
       Fields: {
-        key: dataset._id,
+        key: `${dataset._id}/0`,
       },
       Conditions: [['starts-with', '$Content-Type', 'text/']],
       Expires: 30,
