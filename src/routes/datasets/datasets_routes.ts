@@ -88,7 +88,7 @@ router.get('/:datasetId', async (req: AuthenticatedRoute, res) => {
     const dataset = await Dataset.findById(datasetId).lean().exec();
     const s3Params = {
       Bucket: 'skyvue-datasets',
-      Key: `${datasetId.toString()}/columns`,
+      Key: `${datasetId.toString()}/columns/0`,
     };
     const head = await s3.headObject(s3Params).promise();
     res.json({ dataset, head });
