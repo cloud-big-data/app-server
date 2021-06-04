@@ -64,6 +64,31 @@ router.post('/make_dataset_upload_url', async (req: AuthenticatedRoute, res) => 
   );
 });
 
+router.post(
+  '/make_dataset_append_url/:datasetId',
+  async (req: AuthenticatedRoute, res) => {
+    const { datasetId } = req.params;
+
+    s3.createPresignedPost(
+      {
+        Fields: {
+          key: `${datasetId}/0`,
+        },
+        Conditions: [['starts-with', '$Content-Type', 'text/']],
+        Expires: 30,
+        Bucket: 'skyvue-datasets-appends',
+      },
+      async (error, signed) => {
+        if (error) {
+          return res.status(500).json({ error: 'Upload error' });
+        }
+
+        res.json(signed);
+      },
+    );
+  },
+);
+
 router.post('/process_dataset', async (req: AuthenticatedRoute, res) => {
   const { body } = req;
   const { key } = body;
@@ -121,6 +146,7 @@ router.delete('/:datasetId', async (req: AuthenticatedRoute, res) => {
   }
 });
 
+// deprecated
 router.post('/duplicate/:datasetId', async (req: AuthenticatedRoute, res) => {
   const { newTitle, raw } = req.body;
   const { datasetId } = req.params;
@@ -162,42 +188,6 @@ router.post('/duplicate/:datasetId', async (req: AuthenticatedRoute, res) => {
   }
 
   res.json(newDataset);
-});
-
-// deprecated, do not use
-router.post('/upload', async (req: AuthenticatedRoute, res) => {
-  const csvAsJson: Array<any> = await csv().fromString(
-    // @ts-ignore
-    req.files.csv.data.toString('utf8'),
-  );
-  const userId = req.user._id.toString();
-  // @ts-ignore
-  const { name } = req.files.csv;
-  const fileName = name.substring(0, name.length - '.csv'.length);
-  const boardData = parseFormData(fileName, userId, csvAsJson);
-
-  const dataset = new Dataset({
-    userId,
-    title: fileName,
-    visibilitySettings: boardData.visibilitySettings,
-  });
-
-  await dataset.save();
-
-  const s3Params = {
-    Bucket: 'skyvue-datasets',
-    Key: dataset._id.toString(),
-    Body: JSON.stringify(R.omit(['title'], boardData)),
-    ContentType: 'application/json',
-  };
-
-  try {
-    await s3.putObject(s3Params).promise();
-    res.status(200).json({ success: true });
-  } catch (e) {
-    console.log(e);
-    res.sendStatus(400);
-  }
 });
 
 module.exports = router;
