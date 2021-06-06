@@ -4,6 +4,7 @@ import expressUpload from 'express-fileupload';
 import aws from 'aws-sdk';
 import * as R from 'ramda';
 import { AuthenticatedRoute } from 'types/requestTypes';
+import { v4 as uuid } from 'uuid';
 import datasetService from '../../services/datasetService';
 import authCheck from '../../middleware/authCheck';
 import parseFormData from './lib/parseFormData';
@@ -50,7 +51,7 @@ router.post('/make_dataset_upload_url', async (req: AuthenticatedRoute, res) => 
         key: `${dataset._id}/0`,
       },
       Conditions: [['starts-with', '$Content-Type', 'text/']],
-      Expires: 30,
+      Expires: 3600,
       Bucket: 'skyvue-datasets-queue',
     },
     async (error, signed) => {
@@ -88,6 +89,30 @@ router.post(
     );
   },
 );
+
+router.post('/make_dataset_preview_url', async (req: AuthenticatedRoute, res) => {
+  const _id = uuid();
+  s3.createPresignedPost(
+    {
+      Fields: {
+        key: _id,
+      },
+      Conditions: [['starts-with', '$Content-Type', 'text/']],
+      Expires: 30,
+      Bucket: 'skyvue-upload-previews',
+    },
+    async (error, signed) => {
+      if (error) {
+        return res.status(500).json({ error: 'Upload error' });
+      }
+
+      res.json({
+        _id,
+        ...signed,
+      });
+    },
+  );
+});
 
 router.post('/process_dataset', async (req: AuthenticatedRoute, res) => {
   const { body } = req;
