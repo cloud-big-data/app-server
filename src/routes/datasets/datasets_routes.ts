@@ -1,5 +1,4 @@
 import express from 'express';
-import csv from 'csvtojson';
 import expressUpload from 'express-fileupload';
 import aws from 'aws-sdk';
 import * as R from 'ramda';
@@ -7,8 +6,8 @@ import { AuthenticatedRoute } from 'types/requestTypes';
 import { v4 as uuid } from 'uuid';
 import datasetService from '../../services/datasetService';
 import authCheck from '../../middleware/authCheck';
-import parseFormData from './lib/parseFormData';
 import Dataset from '../../models/dataset';
+import m from '../../models';
 
 const router = express.Router();
 
@@ -20,6 +19,44 @@ const s3 = new aws.S3({
 
 router.use(authCheck);
 router.use(expressUpload());
+
+router.param('datasetId', async (req: AuthenticatedRoute, res, next) => {
+  const dataset = await m.Dataset.findById(req.params.datasetId);
+  if (!dataset) {
+    return res.sendStatus(404);
+  }
+
+  req.dataset = dataset;
+
+  const { visibilitySettings } = dataset;
+
+  const checkPrivileges = (key: 'editors' | 'viewers' | 'owner') =>
+    visibilitySettings[key].includes(req.user._id);
+
+  const userIs = {
+    editor: checkPrivileges('editors'),
+    viewer: checkPrivileges('viewers'),
+    owner: visibilitySettings.owner === req.user._id.toString(),
+  };
+
+  const handleMethod = (truthCase: boolean) =>
+    truthCase ? next() : res.sendStatus(403);
+
+  switch (req.method) {
+    case 'GET':
+      return handleMethod(userIs.viewer || visibilitySettings.isPublic);
+    case 'PATCH':
+      return handleMethod(userIs.editor || userIs.owner);
+    case 'DELETE':
+      return handleMethod(userIs.owner);
+    case 'POST':
+      return handleMethod(userIs.owner || userIs.editor);
+    case 'PUT':
+      return handleMethod(userIs.owner || userIs.editor);
+    default:
+      return res.sendStatus(403);
+  }
+});
 
 router.get('/', async (req: AuthenticatedRoute, res) => {
   const datasets = await Dataset.find({
@@ -173,44 +210,30 @@ router.delete('/:datasetId', async (req: AuthenticatedRoute, res) => {
 
 // deprecated
 router.post('/duplicate/:datasetId', async (req: AuthenticatedRoute, res) => {
-  const { newTitle, raw } = req.body;
+  const { newTitle } = req.body;
   const { datasetId } = req.params;
 
-  if (!datasetId || !req.user._id) res.sendStatus(400);
+  if (!datasetId) res.sendStatus(400);
+  if (!req.dataset) res.sendStatus(500);
 
-  const current = await Dataset.findById(datasetId).lean().exec();
   const newDataset = new Dataset({
+    isProcessing: true,
     userId: req.user._id,
-    title: newTitle ?? `${current.title} (copy)`,
+    title: newTitle ?? `${req.dataset.title} (copy)`,
     visibilitySettings: {
       owner: req.user._id,
+      editors: [req.user._id],
+      isPublic: false,
     },
   });
 
+  await datasetService.post('/datasets/jobs/duplicateDataset', {
+    oldDatasetId: datasetId,
+    newDatasetId: newDataset._id,
+  });
+
+  newDataset.isProcessing = false;
   await newDataset.save();
-
-  if (raw) {
-    const s3Params = {
-      Bucket: 'skyvue-datasets',
-      Key: current._id.toString(),
-    };
-    const s3Res = await s3.getObject(s3Params).promise();
-    const currentBoardData = JSON.parse(s3Res.Body.toString('utf-8'));
-
-    try {
-      await s3
-        .putObject({
-          ...s3Params,
-          Key: newDataset._id.toString(),
-          Body: JSON.stringify(R.omit(['title'], currentBoardData)),
-          ContentType: 'application/json',
-        })
-        .promise();
-    } catch (e) {
-      console.log(e);
-      return res.sendStatus(400);
-    }
-  }
 
   res.json(newDataset);
 });

@@ -1,6 +1,6 @@
 import Mongoose, { Schema, Document } from 'mongoose';
 
-interface IDataset extends Document {
+export interface IDataset extends Document {
   isProcessing: boolean;
   userId: string;
   title: string;
@@ -8,10 +8,10 @@ interface IDataset extends Document {
     isPublic: boolean;
     owner: string;
     editors: string[];
-    viewers: string[];
+    viewers?: string[];
   };
-  updatedAt: string;
-  createdAt: string;
+  updatedAt?: string;
+  createdAt?: string;
 }
 
 const Dataset = new Schema(
