@@ -15,6 +15,11 @@ const authCheck = async (
   const accessToken = req.headers.authorization.substring('bearer '.length);
 
   if (accessToken === process.env.DATASET_SERVICE_SECRET) {
+    if (req.body.userId) {
+      const representedUser = await loadUser(req.body.userId);
+      console.log(representedUser);
+      req.user = representedUser;
+    }
     next();
     return;
   }

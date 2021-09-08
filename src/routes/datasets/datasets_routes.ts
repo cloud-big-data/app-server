@@ -229,15 +229,27 @@ router.post('/duplicate/:datasetId', async (req: AuthenticatedRoute, res) => {
     },
   });
 
-  await datasetService.post('/datasets/jobs/duplicateDataset', {
-    oldDatasetId: datasetId,
-    newDatasetId: newDataset._id,
-  });
+  try {
+    const jobExecution = await datasetService.post(
+      '/datasets/jobs/duplicateDataset',
+      {
+        oldDatasetId: datasetId,
+        newDatasetId: newDataset._id,
+      },
+    );
 
-  newDataset.isProcessing = false;
-  await newDataset.save();
+    const jobJson = await jobExecution.json();
+    if (!jobJson?.success) {
+      return res.status(500).json(jobJson);
+    }
 
-  res.json(newDataset);
+    newDataset.isProcessing = false;
+    await newDataset.save();
+
+    res.json(newDataset);
+  } catch (e) {
+    return res.sendStatus(500);
+  }
 });
 
 module.exports = router;
