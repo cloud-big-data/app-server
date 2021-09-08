@@ -31,7 +31,7 @@ router.param('datasetId', async (req: AuthenticatedRoute, res, next) => {
   const { visibilitySettings } = dataset;
 
   const checkPrivileges = (key: 'editors' | 'viewers' | 'owner') =>
-    visibilitySettings[key].includes(req.user._id);
+    visibilitySettings[key].includes(req.user._id.toString());
 
   const userIs = {
     editor: checkPrivileges('editors'),
@@ -44,7 +44,9 @@ router.param('datasetId', async (req: AuthenticatedRoute, res, next) => {
 
   switch (req.method) {
     case 'GET':
-      return handleMethod(userIs.viewer || visibilitySettings.isPublic);
+      return handleMethod(
+        userIs.editor || userIs.viewer || visibilitySettings.isPublic,
+      );
     case 'PATCH':
       return handleMethod(userIs.editor || userIs.owner);
     case 'DELETE':
