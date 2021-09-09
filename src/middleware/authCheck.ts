@@ -17,7 +17,6 @@ const authCheck = async (
   if (accessToken === process.env.DATASET_SERVICE_SECRET) {
     if (req.body.userId) {
       const representedUser = await loadUser(req.body.userId);
-      console.log(representedUser);
       req.user = representedUser;
     }
     next();

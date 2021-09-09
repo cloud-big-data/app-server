@@ -210,7 +210,6 @@ router.delete('/:datasetId', async (req: AuthenticatedRoute, res) => {
   }
 });
 
-// deprecated
 router.post('/duplicate/:datasetId', async (req: AuthenticatedRoute, res) => {
   const { newTitle } = req.body;
   const { datasetId } = req.params;
