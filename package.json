@@ -5,7 +5,7 @@
   "main": "dist/app.js",
   "scripts": {
     "test": "test",
-    "start": "tsc && doppler run -- node dist/app.js",
+    "start": "tsc && node dist/app.js",
     "src": "ts-node src/app.js",
     "doppler": "doppler run -- npm run src",
     "dev": "nodemon --exec npm run doppler",
